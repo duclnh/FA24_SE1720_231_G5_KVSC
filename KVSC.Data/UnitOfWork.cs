@@ -12,6 +12,8 @@ namespace KVSC.Data
         private ServiceRepository _serviceRepository;
         private ServiceCategoryRepository _categoryRepository;
         private ServiceRequestRepository _serviceRequestRepository;
+        private DoctorRepository _doctorRepository;
+        private DoctorSheduleRepository _doctorSheduleRepository;
         public UnitOfWork()
         {
 
@@ -26,6 +28,16 @@ namespace KVSC.Data
         public ServiceRequestRepository ServiceRequestRepository
         {
             get { return _serviceRequestRepository ??= new ServiceRequestRepository(_context); }
+        }
+
+        public DoctorRepository DoctorRepository
+        {
+            get { return _doctorRepository ??= new DoctorRepository(_context); }
+        }
+
+        public DoctorSheduleRepository DoctorSheduleRepository
+        {
+            get { return _doctorSheduleRepository ??= new DoctorSheduleRepository(_context); }
         }
 
         public ServiceCategoryRepository serviceCategoryRepository
