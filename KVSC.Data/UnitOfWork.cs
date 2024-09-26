@@ -10,6 +10,8 @@ namespace KVSC.Data
         private FA24_SE1720_231_G5_KVSCContext _context;
         private CustomerRepository _customerRepository;
         private ServiceRequestRepository _serviceRequestRepository;
+        private DoctorRepository _doctorRepository;
+        private DoctorSheduleRepository _doctorSheduleRepository;
         public UnitOfWork()
         {
 
@@ -25,6 +27,18 @@ namespace KVSC.Data
         {
             get { return _serviceRequestRepository ??= new ServiceRequestRepository(_context); }
         }
+
+        public DoctorRepository DoctorRepository
+        {
+            get { return _doctorRepository ??= new DoctorRepository(_context); }
+        }
+
+        public DoctorSheduleRepository DoctorSheduleRepository
+        {
+            get { return _doctorSheduleRepository ??= new DoctorSheduleRepository(_context); }
+        }
+
+
 
         ////TO-DO CODE HERE/////////////////
 
