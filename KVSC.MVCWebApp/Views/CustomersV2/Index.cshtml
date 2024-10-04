@@ -1,0 +1,66 @@
+﻿@model IEnumerable<KVSC.Data.Models.Customer>
+@{
+    ViewData["Title"] = "Index";
+}
+<div class="row">
+    <div class="col-md-12">
+        <table class="table table-striped table-bordered table-hover">
+            <thead>
+                <tr class="card-header">
+                    <th class="card-title text-center">FullName</th>
+                    <th class="card-title text-center">PhoneNumber</th>
+                    <th class="card-title text-center">Email</th>
+                    <th class="card-title text-center">Address</th>
+                    <th class="card-title text-center">DateOfBirth</th>
+                    <th class="card-title text-center">Gender</th>
+                    <th class="card-title text-center">JoinDate</th>
+                    <th class="card-title text-center">MembershipType</th>
+                    <th class="card-title text-center">TotalOrders</th>
+                </tr>
+            </thead>
+            <tbody class="tblCustomers">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section scripts {
+    <script type="text/javascript">
+        $(document).ready(function (){
+           loadData();
+        })
+
+        function loadData() {
+            alert("Load data progressing...")
+            $.ajax({
+                url: 'https://localhost:7078/api/Customers',
+                type: "GET",
+                contentType: "application/json;charset=utf-8",
+                dataType: "json",
+                success: function (result) {
+                    alert('Server response: ' + result.message);
+                    console.log(result);
+                    var html = '';
+                    $.each(result.data, function (key, item) {
+                        html += '<tr>';
+                        html += '<td>' + item.fullName + '</td>';
+                        html += '<td>' + item.phoneNumber + '</td>';
+                        html += '<td>' + item.email + '</td>';
+                        html += '<td>' + item.address + '</td>';
+                        html += '<td>' + item.dateOfBirth + '</td>';
+                        html += '<td>' + item.gender + '</td>';
+                        html += '<td>' + item.joinDate + '</td>';
+                        html += '<td>' + item.membershipType + '</td>';
+                        html += '<td>' + item.totalOrders + '</td>';
+                        html += '<td></td>';
+                        html += '</tr>';
+                    });
+                    $('.tblCustomers').html(html);
+                },
+                error: function (xhr, error) {
+                    alert(xhr.statusText);
+                }
+            });
+        }
+    </script>
+}

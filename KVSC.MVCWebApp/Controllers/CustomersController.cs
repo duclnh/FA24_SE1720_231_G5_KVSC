@@ -100,7 +100,7 @@ namespace KVSC.MVCWebApp.Controllers
                     }
                 }
 
-                if (!createStatus)
+                if (createStatus)
                     return RedirectToAction(nameof(Index));
             }
 
@@ -176,12 +176,13 @@ namespace KVSC.MVCWebApp.Controllers
                                 {
                                     updateStatus = false;
                                 }
-                                return View(data);
                             }
                         }
                     }
                 }
             }
+            if (updateStatus)
+                return RedirectToAction(nameof(Index));
 
             return View(customer);
         }

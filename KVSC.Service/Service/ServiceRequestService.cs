@@ -52,7 +52,7 @@ public class ServiceRequestService : IServiceRequestService
     {
         try
         {
-            var result = await _unitOfWork.ServiceRequestRepository.GetAllAsync();
+            var result = await _unitOfWork.ServiceRequestRepository.GetAllServiceRequestsAsync();
             if (!result.Any())
             {
                 return new BusinessResult(Const.FAIL_READ_CODE, Const.FAIL_READ_MSG);
@@ -69,7 +69,7 @@ public class ServiceRequestService : IServiceRequestService
     {
         try
         {
-            var result = await _unitOfWork.ServiceRequestRepository.GetByIdAsync(id);
+            var result = await _unitOfWork.ServiceRequestRepository.GetServiceRequestByIdAsync(id);
             if (result == null)
             {
                 return new BusinessResult(Const.FAIL_READ_CODE, Const.FAIL_READ_MSG);
