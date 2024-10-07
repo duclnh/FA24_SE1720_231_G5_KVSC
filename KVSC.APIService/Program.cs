@@ -24,7 +24,7 @@ options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("all", builder => builder.AllowAnyOrigin()
+    options.AddDefaultPolicy(builder => builder.AllowAnyOrigin()
                                                .AllowAnyHeader()
                                                .AllowAnyMethod());
 });
@@ -42,7 +42,7 @@ app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
-app.UseCors("");
+app.UseCors();
 
 app.MapControllers();
 

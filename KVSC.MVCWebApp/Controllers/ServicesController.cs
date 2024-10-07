@@ -105,7 +105,8 @@ namespace KVSC.MVCWebApp.Controllers
             {
                 using (var httpClient = new HttpClient())
                 {
-                    using (var respone = await httpClient.PostAsJsonAsync(Const.APIEndPoint + "Services/",service))
+                    using (var respone = await httpClient.PostAsJsonAsync(Const.APIEndPoint + "Services",service))
+
                     {
                         if (respone.IsSuccessStatusCode)
                         {
@@ -173,13 +174,16 @@ namespace KVSC.MVCWebApp.Controllers
             {
                 using (var httpClient = new HttpClient())
                 {
-                    using (var respone = await httpClient.PutAsJsonAsync(Const.APIEndPoint + "Services/", service))
+
+                    using (var respone = await httpClient.PostAsJsonAsync(Const.APIEndPoint + "Services", service))
                     {
                         if (respone.IsSuccessStatusCode)
                         {
                             var content = await respone.Content.ReadAsStringAsync();
                             var result = JsonConvert.DeserializeObject<BusinessResult>(content);
+
                             if (result != null && result.Status == Const.SUCCESS_UPDATE_CODE)
+
                             {
                                 saveStatus = true;
                             }
@@ -198,7 +202,8 @@ namespace KVSC.MVCWebApp.Controllers
             else
             {
                 ViewData["CategoryId"] = new SelectList(await this.GetServiceCategory(), "CategoryId", "CategoryName", service.CategoryId);
-                return View(service);
+                return View();
+
             }
         }
 
