@@ -1,0 +1,6 @@
+@KVSC.APIService_HostAddress = http://localhost:5069
+
+GET {{KVSC.APIService_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
