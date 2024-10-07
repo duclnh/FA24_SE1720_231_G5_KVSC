@@ -70,13 +70,13 @@
                 @Html.DisplayFor(modelItem => item.Notes)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.AssignedDoctor.DoctorId)
+                @Html.DisplayFor(modelItem => item.AssignedDoctor.FullName)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Customer.CustomerId)
+                @Html.DisplayFor(modelItem => item.Customer.FullName)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Service.ServiceId)
+                @Html.DisplayFor(modelItem => item.Service.ServiceName)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.RequestId">Edit</a> |

@@ -6,52 +6,72 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using KVSC.Data.Models;
+using KVSC.Common;
+using Newtonsoft.Json;
+using KVSC.Service.Base;
+using System.Data;
+
 
 namespace KVSC.MVCWebApp.Controllers
 {
     public class ServiceRequestsController : Controller
     {
-        private readonly FA24_SE1720_231_G5_KVSCContext _context;
 
-        public ServiceRequestsController(FA24_SE1720_231_G5_KVSCContext context)
+        public ServiceRequestsController()
         {
-            _context = context;
         }
 
-        // GET: ServiceRequests
+        //GET: ServiceRequests
         public async Task<IActionResult> Index()
         {
-            var fA24_SE1720_231_G5_KVSCContext = _context.ServiceRequests.Include(s => s.AssignedDoctor).Include(s => s.Customer).Include(s => s.Service);
-            return View(await fA24_SE1720_231_G5_KVSCContext.ToListAsync());
+            using (var http = new HttpClient())
+            {
+                using (var response = await http.GetAsync(Const.APIEndPoint + "ServiceRequests"))
+                {
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var content = await response.Content.ReadAsStringAsync();
+                        var result = JsonConvert.DeserializeObject<BusinessResult>(content.ToString());
+                        if (result != null && result.Status == Const.SUCCESS_READ_CODE)
+                        {
+                            var data = JsonConvert.DeserializeObject<List<ServiceRequest>>(result.Data.ToString());
+                            return View(data);
+                        }
+
+                    }
+                }
+            }
+            return View(new List<ServiceRequest>());
         }
 
-        // GET: ServiceRequests/Details/5
+        //GET: ServiceRequests/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
+            using (var http = new HttpClient())
             {
-                return NotFound();
+                using (var repsone = await http.GetAsync(Const.APIEndPoint + $"ServiceRequests/{id}"))
+                {
+                    if (repsone.IsSuccessStatusCode)
+                    {
+                        var content = await repsone.Content.ReadAsStringAsync();
+                        var result = JsonConvert.DeserializeObject<BusinessResult>(content);
+                        if (result != null && result.Status == Const.SUCCESS_READ_CODE)
+                        {
+                            var data = JsonConvert.DeserializeObject<ServiceRequest>(result.Data.ToString());
+                            return View(data);
+                        }
+                    }
+                }
             }
-
-            var serviceRequest = await _context.ServiceRequests
-                .Include(s => s.AssignedDoctor)
-                .Include(s => s.Customer)
-                .Include(s => s.Service)
-                .FirstOrDefaultAsync(m => m.RequestId == id);
-            if (serviceRequest == null)
-            {
-                return NotFound();
-            }
-
-            return View(serviceRequest);
+            return View(new ServiceRequest());
         }
 
         // GET: ServiceRequests/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewData["AssignedDoctorId"] = new SelectList(_context.Doctors, "DoctorId", "DoctorId");
-            ViewData["CustomerId"] = new SelectList(_context.Customers, "CustomerId", "CustomerId");
-            ViewData["ServiceId"] = new SelectList(_context.Services, "ServiceId", "ServiceId");
+            ViewData["AssignedDoctorId"] = new SelectList(await GetDoctors(), "DoctorId", "FullName");
+            ViewData["CustomerId"] = new SelectList(await GetCustomers(), "CustomerId", "FullName");
+            ViewData["ServiceId"] = new SelectList(await GetServices(), "ServiceId", "ServiceName");
             return View();
         }
 
@@ -62,34 +82,59 @@ namespace KVSC.MVCWebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("RequestId,CustomerId,ServiceId,RequestDate,RequestDetails,Status,AssignedDoctorId,CompletionDate,TotalAmount,Feedback,Notes")] ServiceRequest serviceRequest)
         {
+            bool createStatus = false;
             if (ModelState.IsValid)
             {
-                _context.Add(serviceRequest);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                using (var http = new HttpClient())
+                {
+                    using (var repsone = await http.PostAsJsonAsync(Const.APIEndPoint + $"ServiceRequests", serviceRequest))
+                    {
+                        if (repsone.IsSuccessStatusCode)
+                        {
+                            var content = await repsone.Content.ReadAsStringAsync();
+                            var result = JsonConvert.DeserializeObject<BusinessResult>(content);
+                            if (result != null && result.Status == Const.SUCCESS_CREATE_CODE)
+                            {
+                                createStatus = true;
+                            }
+                        }
+                    }
+                }
             }
-            ViewData["AssignedDoctorId"] = new SelectList(_context.Doctors, "DoctorId", "DoctorId", serviceRequest.AssignedDoctorId);
-            ViewData["CustomerId"] = new SelectList(_context.Customers, "CustomerId", "CustomerId", serviceRequest.CustomerId);
-            ViewData["ServiceId"] = new SelectList(_context.Services, "ServiceId", "ServiceId", serviceRequest.ServiceId);
-            return View(serviceRequest);
+            if (createStatus)
+                return RedirectToAction(nameof(Index));
+
+            ViewData["AssignedDoctorId"] = new SelectList(await GetDoctors(), "DoctorId", "FullName");
+            ViewData["CustomerId"] = new SelectList(await GetCustomers(), "CustomerId", "FullName");
+            ViewData["ServiceId"] = new SelectList(await GetServices(), "ServiceId", "ServiceName");
+            return View(new ServiceRequest());
         }
 
         // GET: ServiceRequests/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
+            var serviceRequest = new ServiceRequest();
+
+            using (var httpClient = new HttpClient())
             {
-                return NotFound();
+                using(var response = await httpClient.GetAsync(Const.APIEndPoint + $"ServiceRequests/{id}" ))
+                {
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var content = await response.Content.ReadAsStringAsync();
+                        var result = JsonConvert.DeserializeObject<BusinessResult>(content);
+                        if(result != null && result.Status == Const.SUCCESS_READ_CODE)
+                        {
+                            serviceRequest = JsonConvert.DeserializeObject<ServiceRequest>(result.Data.ToString());
+                        }
+                    }
+                }
             }
 
-            var serviceRequest = await _context.ServiceRequests.FindAsync(id);
-            if (serviceRequest == null)
-            {
-                return NotFound();
-            }
-            ViewData["AssignedDoctorId"] = new SelectList(_context.Doctors, "DoctorId", "DoctorId", serviceRequest.AssignedDoctorId);
-            ViewData["CustomerId"] = new SelectList(_context.Customers, "CustomerId", "CustomerId", serviceRequest.CustomerId);
-            ViewData["ServiceId"] = new SelectList(_context.Services, "ServiceId", "ServiceId", serviceRequest.ServiceId);
+            ViewData["AssignedDoctorId"] = new SelectList(await GetDoctors(), "DoctorId", "FullName");
+            ViewData["CustomerId"] = new SelectList(await GetCustomers(), "CustomerId", "FullName");
+            ViewData["ServiceId"] = new SelectList(await GetServices(), "ServiceId", "ServiceName");
+
             return View(serviceRequest);
         }
 
@@ -100,6 +145,7 @@ namespace KVSC.MVCWebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("RequestId,CustomerId,ServiceId,RequestDate,RequestDetails,Status,AssignedDoctorId,CompletionDate,TotalAmount,Feedback,Notes")] ServiceRequest serviceRequest)
         {
+            bool updateStatus = false;
             if (id != serviceRequest.RequestId)
             {
                 return NotFound();
@@ -107,49 +153,51 @@ namespace KVSC.MVCWebApp.Controllers
 
             if (ModelState.IsValid)
             {
-                try
+                using (var http = new HttpClient())
                 {
-                    _context.Update(serviceRequest);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ServiceRequestExists(serviceRequest.RequestId))
+                    using (var repsone = await http.PutAsJsonAsync(Const.APIEndPoint + $"ServiceRequests", serviceRequest))
                     {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
+                        if (repsone.IsSuccessStatusCode)
+                        {
+                            var content = await repsone.Content.ReadAsStringAsync();
+                            var result = JsonConvert.DeserializeObject<BusinessResult>(content);
+                            if (result != null && result.Status == Const.SUCCESS_UPDATE_CODE)
+                            {
+                                updateStatus = true;
+                            }
+                        }
                     }
                 }
-                return RedirectToAction(nameof(Index));
             }
-            ViewData["AssignedDoctorId"] = new SelectList(_context.Doctors, "DoctorId", "DoctorId", serviceRequest.AssignedDoctorId);
-            ViewData["CustomerId"] = new SelectList(_context.Customers, "CustomerId", "CustomerId", serviceRequest.CustomerId);
-            ViewData["ServiceId"] = new SelectList(_context.Services, "ServiceId", "ServiceId", serviceRequest.ServiceId);
+            if(updateStatus)
+                return RedirectToAction(nameof(Index));
+
+            ViewData["AssignedDoctorId"] = new SelectList(await GetDoctors(), "DoctorId", "FullName");
+            ViewData["CustomerId"] = new SelectList(await GetCustomers(), "CustomerId", "FullName");
+            ViewData["ServiceId"] = new SelectList(await GetServices(), "ServiceId", "ServiceName");
             return View(serviceRequest);
         }
 
         // GET: ServiceRequests/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
+            using (var http = new HttpClient())
             {
-                return NotFound();
+                using (var repsone = await http.GetAsync(Const.APIEndPoint + $"ServiceRequests/{id}"))
+                {
+                    if (repsone.IsSuccessStatusCode)
+                    {
+                        var content = await repsone.Content.ReadAsStringAsync();
+                        var result = JsonConvert.DeserializeObject<BusinessResult>(content);
+                        if (result != null && result.Status == Const.SUCCESS_READ_CODE)
+                        {
+                            var data = JsonConvert.DeserializeObject<ServiceRequest>(result.Data.ToString());
+                            return View(data);
+                        }
+                    }
+                }
             }
-
-            var serviceRequest = await _context.ServiceRequests
-                .Include(s => s.AssignedDoctor)
-                .Include(s => s.Customer)
-                .Include(s => s.Service)
-                .FirstOrDefaultAsync(m => m.RequestId == id);
-            if (serviceRequest == null)
-            {
-                return NotFound();
-            }
-
-            return View(serviceRequest);
+            return View(new ServiceRequest());
         }
 
         // POST: ServiceRequests/Delete/5
@@ -157,19 +205,88 @@ namespace KVSC.MVCWebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var serviceRequest = await _context.ServiceRequests.FindAsync(id);
-            if (serviceRequest != null)
+            bool deleteStatus = false;
+            using (var http = new HttpClient())
             {
-                _context.ServiceRequests.Remove(serviceRequest);
+                using (var repsone = await http.DeleteAsync(Const.APIEndPoint + $"ServiceRequests/{id}"))
+                {
+                    if (repsone.IsSuccessStatusCode)
+                    {
+                        var content = await repsone.Content.ReadAsStringAsync();
+                        var result = JsonConvert.DeserializeObject<BusinessResult>(content);
+                        if (result != null && result.Status == Const.SUCCESS_DELETE_CODE)
+                        {
+                            deleteStatus = true;
+                        }
+                    }
+                }
             }
 
-            await _context.SaveChangesAsync();
+            if (!deleteStatus)
+                return View();
+                
+
             return RedirectToAction(nameof(Index));
         }
 
-        private bool ServiceRequestExists(int id)
+        private async Task<IList<Doctor>?> GetDoctors()
         {
-            return _context.ServiceRequests.Any(e => e.RequestId == id);
+            using (var http = new HttpClient())
+            {
+                var response = await http.GetAsync(Const.APIEndPoint + "Doctors");
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var result = JsonConvert.DeserializeObject<BusinessResult>(content);
+                    if(result != null && result.Status == Const.SUCCESS_READ_CODE)
+                    {
+                        var data = JsonConvert.DeserializeObject<IList<Doctor>>(result.Data.ToString());
+                        return data;
+                    }
+                }
+            }
+
+            return new List<Doctor>();
+        }
+
+        private async Task<IList<Customer>?> GetCustomers()
+        {
+            using (var http = new HttpClient())
+            {
+                var response = await http.GetAsync(Const.APIEndPoint + "Customers");
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var result = JsonConvert.DeserializeObject<BusinessResult>(content);
+                    if (result != null && result.Status == Const.SUCCESS_READ_CODE)
+                    {
+                        var data = JsonConvert.DeserializeObject<IList<Customer>>(result.Data.ToString());
+                        return data;
+                    }
+                }
+            }
+
+            return new List<Customer>();
+        }
+
+        private async Task<IList<Data.Models.Service>?> GetServices()
+        {
+            using (var http = new HttpClient())
+            {
+                var response = await http.GetAsync(Const.APIEndPoint + "Services");
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var result = JsonConvert.DeserializeObject<BusinessResult>(content);
+                    if (result != null && result.Status == Const.SUCCESS_READ_CODE)
+                    {
+                        var data = JsonConvert.DeserializeObject<IList<Data.Models.Service>>(result.Data.ToString());
+                        return data;
+                    }
+                }
+            }
+
+            return new List<Data.Models.Service>();
         }
     }
 }
