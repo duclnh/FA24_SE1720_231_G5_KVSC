@@ -35,7 +35,7 @@ namespace KVSC.Service.Service
         {
             try
             {
-                var doctorSchedule = await _unitOfWork.DoctorSheduleRepository.GetAllAsync();
+                var doctorSchedule = await _unitOfWork.DoctorSheduleRepository.GetAllDoctorScheduleAsync();
 
                 if (doctorSchedule == null || !doctorSchedule.Any())
                 {
@@ -54,7 +54,7 @@ namespace KVSC.Service.Service
         {
             try
             {
-                var doctorSchedule = await _unitOfWork.DoctorSheduleRepository.GetByIdAsync(id);
+                var doctorSchedule = await _unitOfWork.DoctorSheduleRepository.GetDoctorScheduleByIdAsync(id);
 
 
                 if (doctorSchedule == null)
