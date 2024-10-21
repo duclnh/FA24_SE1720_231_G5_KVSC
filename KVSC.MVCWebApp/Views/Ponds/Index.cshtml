@@ -1,0 +1,83 @@
+﻿@model IEnumerable<KVSC.Data.Models.Pond>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Ponds</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.PondSize)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.WaterQuality)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.LastMaintenanceDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Capacity)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Notes)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Location)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CreateDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.LastUpdate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IsActive)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.PondSize)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.WaterQuality)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.LastMaintenanceDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Capacity)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Notes)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Location)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CreateDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.LastUpdate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IsActive)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.PondId">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.PondId">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.PondId">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

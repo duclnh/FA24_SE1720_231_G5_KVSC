@@ -17,8 +17,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\KVSC.APIService\KVSC.APIService.csproj" />
+    <ProjectReference Include="..\KVSC.Common\KVSC.Common.csproj" />
     <ProjectReference Include="..\KVSC.Data\KVSC.Data.csproj" />
+    <ProjectReference Include="..\KVSC.Service\KVSC.Service.csproj" />
   </ItemGroup>
 
 </Project>

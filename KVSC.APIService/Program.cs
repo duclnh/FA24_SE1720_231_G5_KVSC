@@ -19,6 +19,9 @@ builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<IServiceRequestService, ServiceRequestService>();
 builder.Services.AddScoped<IDoctorService, DoctorService>();
 builder.Services.AddScoped<IDoctorScheduleService, DoctorScheduleService>();
+builder.Services.AddScoped<IFishService, FishService>();
+builder.Services.AddScoped<IPondService, PondService>();
+
 builder.Services.AddControllers().AddJsonOptions(options =>
 options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
