@@ -17,6 +17,7 @@ namespace KVSC.Services.Services
         Task<IBusinessResult> GetById(int id);
         Task<IBusinessResult> Save(Data.Models.Service service);
         Task<IBusinessResult> DeleteById(int id);
+        Task<IBusinessResult> FindBy(string CategoryName, string ServiceName, string status);
     }
     public class DSService : IDSService
     {
@@ -144,6 +145,33 @@ namespace KVSC.Services.Services
                     {
                         return new BusinessResult(Const.SUCCESS_DELETE_CODE, Const.SUCCESS_DELETE_MSG, categories);
                     }
+                }
+            }
+            catch (Exception ex)
+            {
+                return new BusinessResult(Const.ERROR_EXCEPTION, ex.Message);
+            }
+        }
+
+        public async Task<IBusinessResult> FindBy(string CategoryName, string ServiceName, string status)
+        {
+            try
+            {
+                #region Business rule
+                #endregion
+
+                //var currencies = _DAO.GetAll();
+                //var currencies = await _currencyRepository.GetAllAsync();
+                var services = await _unitOfWork.serviceRepository.FindBy(CategoryName,ServiceName,status);
+
+
+                if (services == null)
+                {
+                    return new BusinessResult(Const.WARNING_NO_DATA_CODE, Const.WARNING_NO_DATA_MSG);
+                }
+                else
+                {
+                    return new BusinessResult(Const.SUCCESS_READ_CODE, Const.SUCCESS_READ_MSG, services);
                 }
             }
             catch (Exception ex)

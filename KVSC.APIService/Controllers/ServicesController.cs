@@ -92,5 +92,18 @@ namespace KVSC.APIService.Controllers
 
             return await _dSService.DeleteById(id);
         }
+
+        [HttpGet("search")]
+        public async Task<IBusinessResult> GetServiceBy(string? CategoryName,string? ServiceName,string? status)
+        {
+            var serviceCategory = await _dSService.FindBy(CategoryName,ServiceName,status);
+
+            if (serviceCategory == null)
+            {
+                return (IBusinessResult)NotFound();
+            }
+
+            return serviceCategory;
+        }
     }
 }
