@@ -19,5 +19,18 @@ namespace KVSC.Data.Repository
             return await _context.Services.Include(x => x.Category).ToListAsync();
         }
 
+        public async Task<List<Service>> FindBy(string categoryName, string serviceName, string status)
+        {
+            // Use more precise filtering logic
+            return await _context.Services
+                        .Where(x =>
+                            (string.IsNullOrEmpty(serviceName) || x.ServiceName.Contains(serviceName)) &&
+                            (string.IsNullOrEmpty(categoryName) || x.Category.CategoryName.Contains(categoryName)) &&
+                            (string.IsNullOrEmpty(status) || x.Description.Contains(status)))
+                        .Include(x => x.Category)
+                        .ToListAsync();
+        }
+
+
     }
 }

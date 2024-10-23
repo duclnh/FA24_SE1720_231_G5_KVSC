@@ -4,6 +4,23 @@
 }
 
 <div class="row">
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <input type="text" id="categoryNameInput" class="form-control" placeholder="Nhập tên danh mục dịch vụ...">
+        </div>
+        <div class="col-md-4">
+            <input type="text" id="serviceNameInput" class="form-control" placeholder="Nhập tên dịch vụ...">
+        </div>
+        <div class="col-md-4">
+            <input type="text" id="serviceDescriptionInput" class="form-control" placeholder="Nhập mô tả dịch vụ...">
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <button class="btn btn-primary" onclick="searchServices()">Tìm kiếm</button>
+        </div>
+    </div>
+
     <div class="col-md-12">
         <h2>Quản lý dịch vụ</h2>
         <button class="btn btn-primary" onclick="openAddModal()">
@@ -276,5 +293,28 @@
                 });
             }
         }
+
+        //search 3 value
+        function searchServices() {
+            const categoryName = $('#categoryNameInput').val().trim();
+            const serviceName = $('#serviceNameInput').val().trim();
+            const status = $('#serviceDescriptionInput').val().trim();
+
+            $.ajax({
+                url: `https://localhost:7078/api/Services/search?CategoryName=${encodeURIComponent(categoryName)}&ServiceName=${encodeURIComponent(serviceName)}&status=${encodeURIComponent(status)}`,
+                type: "GET",
+                contentType: "application/json;charset=utf-8",
+                dataType: "json",
+                success: function (result) {
+                    console.log("Tìm kiếm dịch vụ thành công:", result);
+                    allServices = result.data;
+                    renderTable(1); // Hiển thị kết quả từ trang đầu tiên
+                },
+                error: function (xhr, error) {
+                    console.error("Lỗi khi tìm kiếm dịch vụ:", xhr.statusText);
+                }
+            });
+        }
+
     </script>
 }
