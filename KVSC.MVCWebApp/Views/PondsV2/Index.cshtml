@@ -1,0 +1,249 @@
+﻿@model IEnumerable<KVSC.Data.Models.Pond>
+@{
+    ViewData["Title"] = "Pond Management";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <h2>Pond Management</h2>
+
+        <button class="btn btn-primary" onclick="openAddModal()">
+            <i class="fas fa-plus"></i> Add New
+        </button>
+        <table class="table table-striped table-bordered table-hover">
+            <thead>
+                <tr class="card-header">
+                    <th class="card-title text-center">Pond Size</th>
+                    <th class="card-title text-center">Water Quality</th>
+                    <th class="card-title text-center">Last Maintenance Date</th>
+                    <th class="card-title text-center">Capacity</th>
+                    <th class="card-title text-center">Notes</th>
+                    <th class="card-title text-center">Location</th>
+                    <th class="card-title text-center">Create Date</th>
+                    <th class="card-title text-center">Last Update</th>
+                    <th class="card-title text-center">Is Active</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody class="tblPonds">
+            </tbody>
+        </table>
+        <div class="pagination">
+        </div>
+    </div>
+</div>
+
+<!-- Modal for add/edit -->
+<div class="modal fade" id="pondModal" tabindex="-1" role="dialog" aria-labelledby="pondModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="pondModalLabel">Add/Edit Pond</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="pondForm">
+                    <input type="hidden" id="pondId" />
+                    <div class="form-group">
+                        <label for="pondSize">Pond Size:</label>
+                        <input type="text" class="form-control" id="pondSize" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="waterQuality">Water Quality:</label>
+                        <input type="text" class="form-control" id="waterQuality" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="lastMaintenanceDate">Last Maintenance Date:</label>
+                        <input type="date" class="form-control" id="lastMaintenanceDate">
+                    </div>
+                    <div class="form-group">
+                        <label for="capacity">Capacity:</label>
+                        <input type="number" class="form-control" id="capacity">
+                    </div>
+                    <div class="form-group">
+                        <label for="notes">Notes:</label>
+                        <textarea class="form-control" id="notes"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="location">Location:</label>
+                        <input type="text" class="form-control" id="location" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="isActive">Is Active:</label>
+                        <select class="form-control" id="isActive">
+                            <option value="true">True</option>
+                            <option value="false">False</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        const pageSize = 4; // Number of items per page
+        let allPonds = [];
+
+        $(document).ready(function () {
+            loadData();
+        });
+
+        function loadData() {
+            console.log("Starting to load data from API...");
+            $.ajax({
+                url: 'https://localhost:7078/api/Ponds',
+                type: "GET",
+                contentType: "application/json;charset=utf-8",
+                dataType: "json",
+                success: function (result) {
+                    console.log("Data loaded successfully:", result);
+                    allPonds = result.data;
+                    renderTable(1);
+                },
+                error: function (xhr, error) {
+                    console.error("Error loading data:", xhr.statusText);
+                }
+            });
+        }
+
+        function renderTable(page) {
+            console.log(`Displaying page ${page}`);
+            const startIndex = (page - 1) * pageSize;
+            const endIndex = startIndex + pageSize;
+            const pondsToRender = allPonds.slice(startIndex, endIndex);
+
+            let html = '';
+            $.each(pondsToRender, function (key, item) {
+                html += '<tr>';
+                html += '<td>' + item.pondSize + '</td>';
+                html += '<td>' + item.waterQuality + '</td>';
+                html += '<td>' + item.lastMaintenanceDate + '</td>';
+                html += '<td>' + item.capacity + '</td>';
+                html += '<td>' + item.notes + '</td>';
+                html += '<td>' + item.location + '</td>';
+                html += '<td>' + item.createDate + '</td>';
+                html += '<td>' + item.lastUpdate + '</td>';
+                html += '<td>' + item.isActive + '</td>';
+                html += '<td>';
+                html += '<button class="btn btn-primary btn-sm mr-2" onclick="openEditModal(' + item.pondId + ')">';
+                html += '<i class="fas fa-edit"></i> Edit';
+                html += '</button>';
+                html += '<button class="btn btn-primary btn-sm" onclick="deletePond(' + item.pondId + ')">';
+                html += '<i class="fas fa-trash-alt"></i> Delete';
+                html += '</button>';
+                html += '</td>';
+                html += '</tr>';
+            });
+            $('.tblPonds').html(html);
+
+            // Pagination
+            const totalPages = Math.ceil(allPonds.length / pageSize);
+            let paginationHtml = '';
+            if (page > 1) {
+                paginationHtml += `<button class="btn btn-outline-secondary btn-sm mr-2" onclick="renderTable(${page - 1})">Previous</button>`;
+            }
+            for (let i = 1; i <= totalPages; i++) {
+                const activeClass = i === page ? 'active' : '';
+                paginationHtml += `<button class="btn btn-outline-primary btn-sm mr-2 ${activeClass}" onclick="renderTable(${i})">${i}</button>`;
+            }
+            if (page < totalPages) {
+                paginationHtml += `<button class="btn btn-outline-secondary btn-sm" onclick="renderTable(${page + 1})">Next</button>`;
+            }
+            $('.pagination').html(paginationHtml);
+        }
+
+        function openAddModal() {
+            $('#pondModalLabel').text('Add Pond');
+            $('#pondForm')[0].reset();
+            $('#pondId').val(0); // Set pondId to 0 for new entry
+            $('#pondModal').modal('show');
+        }
+
+        function openEditModal(id) {
+            $.ajax({
+                url: `https://localhost:7078/api/Ponds/${id}`,
+                type: "GET",
+                contentType: "application/json;charset=utf-8",
+                dataType: "json",
+                success: function (result) {
+                    console.log("Pond data retrieved successfully:", result);
+                    const pond = result.data;
+                    $('#pondId').val(pond.pondId);
+                    $('#pondSize').val(pond.pondSize);
+                    $('#waterQuality').val(pond.waterQuality);
+                    $('#lastMaintenanceDate').val(pond.lastMaintenanceDate);
+                    $('#capacity').val(pond.capacity);
+                    $('#notes').val(pond.notes);
+                    $('#location').val(pond.location);
+                    $('#isActive').val(pond.isActive.toString());
+                    $('#pondModalLabel').text('Edit Pond');
+                    $('#pondModal').modal('show');
+                },
+                error: function (xhr, error) {
+                    console.error("Error retrieving pond data:", xhr.statusText);
+                }
+            });
+        }
+
+        $('#pondForm').submit(function (event) {
+            event.preventDefault();
+
+            var pond = {
+                pondId: parseInt($('#pondId').val()),
+                pondSize: $('#pondSize').val(),
+                waterQuality: $('#waterQuality').val(),
+                lastMaintenanceDate: $('#lastMaintenanceDate').val(),
+                capacity: parseInt($('#capacity').val()),
+                notes: $('#notes').val(),
+                location: $('#location').val(),
+                isActive: $('#isActive').val() === 'true',
+                createDate: new Date().toISOString(), // Add createDate
+                lastUpdate: new Date().toISOString()  // Add lastUpdate
+            };
+
+            console.log("Sending pond data:", pond);
+            $.ajax({
+                url: 'https://localhost:7078/api/Ponds',
+                type: "POST",
+                contentType: "application/json;charset=utf-8",
+                dataType: "json",
+                data: JSON.stringify(pond),
+                success: function (result) {
+                    console.log("Pond saved successfully:", result);
+                    alert(result.message);
+                    $('#pondModal').modal('hide');
+                    loadData();
+                },
+                error: function (xhr, error) {
+                    console.error("Error saving pond data:", xhr.statusText);
+                }
+            });
+        });
+
+        function deletePond(id) {
+            console.log("Deleting pond with ID:", id);
+            if (confirm('Are you sure you want to delete this pond?')) {
+                $.ajax({
+                    url: `https://localhost:7078/api/Ponds/${id}`,
+                    type: "DELETE",
+                    success: function (result) {
+                        console.log("Pond deleted successfully:", result);
+                        alert(result.message);
+                        loadData();
+                    },
+                    error: function (xhr, error) {
+                        console.error("Error deleting pond:", xhr.statusText);
+                    }
+                });
+            }
+        }
+    </script>
+}
