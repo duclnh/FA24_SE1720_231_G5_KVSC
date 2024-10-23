@@ -18,5 +18,28 @@ namespace KVSC.Data.Repository
         {
             return await _context.Doctors.Include(x => x.DoctorsSchedules).ToListAsync();
         }
+
+        public async Task<IEnumerable<Doctor>> SearchAsync(string name, string specialization, int? yearsOfExperience)
+        {
+            var query = _context.Doctors.AsQueryable();
+
+            if (!string.IsNullOrEmpty(name))
+            {
+                query = query.Where(p => p.FullName.Contains(name));
+            }
+
+            if (!string.IsNullOrEmpty(specialization))
+            {
+                query = query.Where(p => p.Specialization.Contains(specialization));
+            }
+
+            if (yearsOfExperience.HasValue)
+            {
+                query = query.Where(p => p.YearsOfExperience == yearsOfExperience.Value);
+            }
+
+            return await query.ToListAsync();
+        }
+
     }
 }
