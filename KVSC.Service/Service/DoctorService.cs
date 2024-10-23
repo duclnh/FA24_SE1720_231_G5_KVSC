@@ -17,6 +17,8 @@ namespace KVSC.Service.Service
         Task<IBusinessResult> DeleteById(int id);
         Task<IBusinessResult> Save(Doctor doctor);
 
+        Task<IBusinessResult> SearchDoctorsAsync(string name, string specialization, int? yearsOfExperience);
+
 
     }
 
@@ -132,6 +134,26 @@ namespace KVSC.Service.Service
                 return new BusinessResult(Const.ERROR_EXCEPTION, ex.ToString());
             }
 
+        }
+
+        public async Task<IBusinessResult> SearchDoctorsAsync(string name, string specialization, int? yearsOfExperience)
+        {
+            try
+            {
+                var doctors = await _unitOfWork.DoctorRepository.SearchAsync(name, specialization, yearsOfExperience);
+
+                if (doctors == null || !doctors.Any())
+                {
+                    return new BusinessResult(Const.WARNING_NO_DATA_CODE, Const.WARNING_NO_DATA_MSG);
+                }
+
+                return new BusinessResult(Const.SUCCESS_READ_CODE, Const.SUCCESS_READ_MSG, doctors);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception here
+                return new BusinessResult(Const.ERROR_EXCEPTION, ex.Message);
+            }
         }
     }
 }

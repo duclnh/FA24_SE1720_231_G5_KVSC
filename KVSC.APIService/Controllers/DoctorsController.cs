@@ -79,5 +79,19 @@ namespace KVSC.APIService.Controllers
         {
             return await _doctorService.DeleteById(id);
         }
+
+        [HttpGet("search")]
+        public async Task<IActionResult> Search([FromQuery] string name = null, [FromQuery] string specialization = null, [FromQuery] int? yearsOfExperience = null)
+        {
+            var doctors = await _doctorService.SearchDoctorsAsync(name, specialization, yearsOfExperience);
+
+            if (doctors == null )
+            {
+                return NotFound(new { message = "No doctors found." });
+            }
+
+            return Ok(new { data = doctors });
+        }
+
     }
 }

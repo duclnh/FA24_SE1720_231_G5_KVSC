@@ -9,6 +9,20 @@
     </div>
 </div>
 
+
+
+<!-- Search Form -->
+<div class="row mb-3">
+    <div class="col-md-12">
+        <div class="input-group">
+            <input type="text" id="searchName" class="form-control" placeholder="Search by Name" />
+            <input type="text" id="searchSpecialization" class="form-control" placeholder="Search by Specialization" />
+            <input type="number" id="searchExperience" class="form-control" placeholder="Years of Experience" />
+            <button class="btn btn-secondary" onclick="searchDoctors();">Search</button>
+        </div>
+    </div>
+</div>
+
 <div class="row">
     <div class="col-md-12">
         <table class="table table-striped table-bordered table-hover">
@@ -30,6 +44,7 @@
         <div id="pagination" class="d-flex justify-content-center"></div>
     </div>
 </div>
+
 
 <div class="modal fade" id="doctorModal" tabindex="-1" aria-labelledby="doctorModalLabel" aria-hidden="true">
 </div>
@@ -81,6 +96,11 @@
         }
 
         function setupPagination() {
+            if (!Array.isArray(allDoctors)) {
+                console.error('allDoctors is not an array:', allDoctors);
+                return;
+            }
+
             var totalPages = Math.ceil(allDoctors.length / itemsPerPage);
             var paginationHtml = '';
 
@@ -92,24 +112,33 @@
         }
 
         function showPage(page) {
+            if (!Array.isArray(allDoctors)) {
+                console.error('allDoctors is not an array:', allDoctors);
+                return;
+            }
+
             currentPage = page;
             var start = (page - 1) * itemsPerPage;
             var end = start + itemsPerPage;
             var pageItems = allDoctors.slice(start, end);
 
             var html = '';
-            $.each(pageItems, function (key, item) {
-                html += '<tr>';
-                html += '<td>' + item.doctorId + '</td>';
-                html += '<td>' + item.fullName + '</td>';
-                html += '<td>' + item.email + '</td>';
-                html += '<td>' + item.address + '</td>';
-                html += '<td>' + item.phoneNumber + '</td>';
-                html += '<td>' + item.specialization + '</td>';
-                html += '<td>' + item.yearsOfExperience + '</td>';
-                html += '<td>' + item.ratingAverage + '</td>';
-                html += '</tr>';
-            });
+            if (pageItems.length === 0) {
+                html = '<tr><td colspan="8" class="text-center">No doctors found</td></tr>';
+            } else {
+                $.each(pageItems, function (key, item) {
+                    html += '<tr>';
+                    html += '<td>' + (item.doctorId || '') + '</td>';
+                    html += '<td>' + (item.fullName || '') + '</td>';
+                    html += '<td>' + (item.email || '') + '</td>';
+                    html += '<td>' + (item.address || '') + '</td>';
+                    html += '<td>' + (item.phoneNumber || '') + '</td>';
+                    html += '<td>' + (item.specialization || '') + '</td>';
+                    html += '<td>' + (item.yearsOfExperience || '') + '</td>';
+                    html += '<td>' + (item.ratingAverage || '') + '</td>';
+                    html += '</tr>';
+                });
+            }
             $('.tblDoctors').html(html);
         }
 
@@ -190,5 +219,47 @@
                 }
             });
         }
+
+        function searchDoctors() {
+            const name = $('#searchName').val().trim();
+            const specialization = $('#searchSpecialization').val().trim();
+            const yearsOfExperience = $('#searchExperience').val().trim();
+
+            $.ajax({
+                url: `https://localhost:7078/api/Doctors/search?name=${encodeURIComponent(name)}&specialization=${encodeURIComponent(specialization)}&yearsOfExperience=${encodeURIComponent(yearsOfExperience)}`,
+                type: "GET",
+                contentType: "application/json;charset=utf-8",
+                dataType: "json",
+                success: function (result) {
+                    console.log("Search doctors successful:", result);
+
+                    // Access the correct data structure
+                    allDoctors = Array.isArray(result.data.data) ? result.data.data : []; // Adjusted to access the correct path
+
+                    if (allDoctors.length === 0) {
+                        $('.tblDoctors').html('<tr><td colspan="8" class="text-center">No doctors found</td></tr>');
+                        $('#pagination').html('');
+                    } else {
+                        // Reset pagination and show first page of results
+                        setupPagination();
+                        showPage(1);
+                    }
+                },
+                error: function (xhr, error) {
+                    console.error("Error searching doctors:", xhr.statusText);
+                    alert('Error searching doctors: ' + xhr.statusText);
+                    $('.tblDoctors').html('<tr><td colspan="8" class="text-center">Error loading doctors</td></tr>');
+                    $('#pagination').html('');
+                }
+            });
+        }
+
+
+
+
+
+
+       
+
     </script>
 }
