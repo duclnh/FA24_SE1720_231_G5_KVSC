@@ -9,9 +9,9 @@ using KVSC.Data.Models;
 
 namespace KVSC.MVCWebApp.Controllers
 {
-    public class FishV2Controller : Controller
+    public class PondsV2Controller : Controller
     {
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             return View();
         }
